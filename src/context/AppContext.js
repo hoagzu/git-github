@@ -1,5 +1,5 @@
 // src/WeatherContext.js
-import React, { createContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
 export const WeatherContext = createContext();
@@ -17,19 +17,32 @@ export const WeatherProvider = ({ children }) => {
     if (city) {
       axios
         .get(`${api.base}weather?q=${city}&appid=${api.key}&units=metric`)
-        .then(response => setWeather(response.data))
+        .then(res =>{
+          console.log(res.data);
+          setWeather(res.data);
+        })
         .catch(() => setWeather(null)); // Reset weather if the API call fails
-    }
+    
+      }
+    
   }, [city]);
-
+      
   const handleKeyPress = useCallback((search) => {
     if (search) {
       setCity(search);
     }
   }, []);
 
+  // Sử dụng useMemo để memoize giá trị weatherContextValue
+  const weatherContextValue = useMemo(() => ({
+    weather,
+    city,
+    setCity,
+    handleKeyPress
+  }), [weather, city, handleKeyPress]);
+  
   return (
-    <WeatherContext.Provider value={{ weather, city, setCity, handleKeyPress }}>
+    <WeatherContext.Provider value={weatherContextValue}>
       {children}
     </WeatherContext.Provider>
   );
